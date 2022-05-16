@@ -1,0 +1,32 @@
+// Corruption Visualization (Deceptive)
+
+import {vl} from "@vega/vega-lite-api-v5"
+corruption_perception_2019_file = FileAttachment("CPI_2019_dataset.csv")
+cpi_2019 = corruption_perception_2019_file.csv({typed: true})
+
+
+// Country Competitiveness vs. Country Risk
+vl.markSquare({square: true, tooltip: true})
+  .data(cpi_2019)
+  .title('Most Corrupt Countries around the World (2019)')
+  .encode(
+    vl.x().fieldQ('IMD World Competitiveness Yearbook').title('Country Competitiveness'),
+    vl.y().fieldQ('PRS International Country Risk Guide').title('Country Risk'),
+    vl.color().fieldN('Country')
+  )
+  .render()
+  
+  
+// Competitiveness vs. Risk for various Regions
+vl.markSquare({square: true, tooltip: true})
+  .data(cpi_2019)
+  .title('Corruption on a Global Scale (2019)')
+  .encode(
+    vl.x().fieldQ('IMD World Competitiveness Yearbook').title('Competitiveness'),
+    vl.y().fieldQ('PRS International Country Risk Guide').title('Risk'),
+    vl.color().fieldN('Country'),
+    vl.column().fieldN('Region')
+  )
+  .width(100)
+  .height(200)
+  .render()
