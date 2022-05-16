@@ -1,0 +1,73 @@
+// Corruption Visualization (Ethical)
+
+import {vl} from "@vega/vega-lite-api-v5"
+corruption_perception_2019_file = FileAttachment("CPI_2019_dataset.csv")
+
+// all data is in strings --> turn data into respective data types
+cpi_2019 = corruption_perception_2019_file.csv({typed: true})
+
+
+// Countries and CPI
+vl.markCircle({circle: true, tooltip: true})
+  .data(cpi_2019)
+  .title('Corruption Perception Index (CPI) by Country around the World (2019)')
+  .encode(
+    vl.x().fieldQ('Rank').bin({maxbins: 20, minstep: 10}).title('CPI Ranking'),
+    vl.y().fieldQ('CPI score 2019').title('CPI Score'),
+    vl.color().fieldN('Country')
+  )
+  .render()
+  
+  // Incorporating Zooming and Panning
+  vl.markCircle({circle: true, tooltip: true})
+  .data(cpi_2019)
+  .params(
+    vl.selectInterval().bind('scales') // bind interval selection to scale domains
+  )
+  .title('Corruption Perception Index (CPI) by Country around the World (2019)')
+  .encode(
+    vl.x().fieldQ('Rank').bin({maxbins: 20, minstep: 10}).title('CPI Ranking'),
+    vl.y().fieldQ('CPI score 2019').title('CPI Score'),
+    vl.color().fieldN('Country')
+  )
+  .render()
+  
+  
+// Geographical Region and CPI
+vl.markBar({bar: true, tooltip: true})
+  .data(cpi_2019)
+  .title('Western Europe and Eastern Europe (WE/EU) Lead in CPI (2019)')
+  .encode(
+    vl.x().fieldN('Region'),
+    vl.y().fieldQ('CPI score 2019').aggregate('mean'),
+    vl.color().fieldN('Region')
+  )
+  .render()
+
+
+// Combine Selection of Scatterplot dots and Regional bar graph
+{
+  const selectIntervalBrush = vl.selectInterval().encodings("x");
+  
+  const cpiRankings = vl.markCircle({circle: true, tooltip: true})
+    .select(selectIntervalBrush) // add in selection brush
+    .title('Western Europe and Eastern Europe (WE/EU) with Highest CPI Scores (2019)')
+    .encode(
+      vl.x().fieldQ('Rank').bin({maxbins: 20, minstep: 10}).title('CPI Ranking'),
+      vl.y().fieldQ('CPI score 2019').title('CPI Score'),
+      vl.color().fieldN('Region')
+    );
+
+  // Create a bar plot of weather frequencies
+  const regionalBar = vl.markBar()
+    .transform(vl.filter(selectIntervalBrush)) // add in the selection interval to the bar chart
+    .encode(
+      vl.x().fieldQ('CPI score 2019').aggregate('mean'),
+      vl.y().fieldN('Region'),
+      vl.color().fieldN('Region')
+    );
+  
+  return vl.vconcat(cpiRankings, regionalBar)
+    .data(cpi_2019)
+    .render();
+}
